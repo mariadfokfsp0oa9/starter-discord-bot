@@ -1,113 +1,20 @@
+const { Client, IntentsBitField } = require("discord.js");
+const fetch = require("node-fetch");
+const client = new Client({intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages]});
+const channels = ["1196589910459691069", "958580587420069918", "958580478657568808", "958580373133094922", "958580421711519776", "1079780711017496617", "994627482458280047", "959137986438660166"];
+const uptime = Date.now();
 
-// const { clientId, guildId, token, publicKey } = require('./config.json');
-require('dotenv').config()
-const APPLICATION_ID = process.env.APPLICATION_ID 
-const TOKEN = process.env.TOKEN 
-const PUBLIC_KEY = process.env.PUBLIC_KEY || 'not set'
-const GUILD_ID = process.env.GUILD_ID 
+const server = http.createServer((req, res => {
+    res.send("Ok.");
+}));
+server.listen(3000);
 
+setinterval(() => fetch("http://DrearyMiserlyBsddaemon.cmtocc.repl.co"), 60000);
 
-const axios = require('axios')
-const express = require('express');
-const { InteractionType, InteractionResponseType, verifyKeyMiddleware } = require('discord-interactions');
-
-
-const app = express();
-// app.use(bodyParser.json());
-
-const discord_api = axios.create({
-  baseURL: 'https://discord.com/api/',
-  timeout: 3000,
-  headers: {
-	"Access-Control-Allow-Origin": "*",
-	"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-	"Access-Control-Allow-Headers": "Authorization",
-	"Authorization": `Bot ${TOKEN}`
-  }
+client.on("messageCreate", async message => {
+     if(!channels.includes(message.channel.id)) return;
+     await message.react("1161380987637342298");
+     message.react("1091502689025802303");
 });
 
-
-
-
-app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
-  const interaction = req.body;
-
-  if (interaction.type === InteractionType.APPLICATION_COMMAND) {
-    console.log(interaction.data.name)
-    if(interaction.data.name == 'yo'){
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: `Yo ${interaction.member.user.username}!`,
-        },
-      });
-    }
-
-    if(interaction.data.name == 'dm'){
-      // https://discord.com/developers/docs/resources/user#create-dm
-      let c = (await discord_api.post(`/users/@me/channels`,{
-        recipient_id: interaction.member.user.id
-      })).data
-      try{
-        // https://discord.com/developers/docs/resources/channel#create-message
-        let res = await discord_api.post(`/channels/${c.id}/messages`,{
-          content:'Yo! I got your slash command. I am not able to respond to DMs just slash commands.',
-        })
-        console.log(res.data)
-      }catch(e){
-        console.log(e)
-      }
-
-      return res.send({
-        // https://discord.com/developers/docs/interactions/receiving-and-responding#responding-to-an-interaction
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data:{
-          content:'👍'
-        }
-      });
-    }
-  }
-
-});
-
-
-
-app.get('/register_commands', async (req,res) =>{
-  let slash_commands = [
-    {
-      "name": "yo",
-      "description": "replies with Yo!",
-      "options": []
-    },
-    {
-      "name": "dm",
-      "description": "sends user a DM",
-      "options": []
-    }
-  ]
-  try
-  {
-    // api docs - https://discord.com/developers/docs/interactions/application-commands#create-global-application-command
-    let discord_response = await discord_api.put(
-      `/applications/${APPLICATION_ID}/guilds/${GUILD_ID}/commands`,
-      slash_commands
-    )
-    console.log(discord_response.data)
-    return res.send('commands have been registered')
-  }catch(e){
-    console.error(e.code)
-    console.error(e.response?.data)
-    return res.send(`${e.code} error from discord`)
-  }
-})
-
-
-app.get('/', async (req,res) =>{
-  return res.send('Follow documentation ')
-})
-
-
-app.listen(8999, () => {
-
-})
-
+client.login(process.env.TOKEN);
